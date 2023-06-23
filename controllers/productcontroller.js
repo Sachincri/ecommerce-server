@@ -40,7 +40,7 @@ export const createProduct = catchAsyncError(async (req, res, next) => {
 
 // Get Product
 export const getAllProducts = catchAsyncError(async (req, res, next) => {
-  const resultPerPage = 8;
+  const resultPerPage = 12;
   const productsCount = await Product.countDocuments();
 
   const apiFeature = new SearchFeatures(Product.find(), req.query)
@@ -202,6 +202,7 @@ export const createProductReview = catchAsyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
+    message: "Thanks for your feedback."
   });
 });
 
@@ -263,5 +264,6 @@ export const deleteReview = catchAsyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
+    message: "Review Delete Successfully"
   });
 });

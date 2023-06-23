@@ -41,7 +41,7 @@ export const placeOrderOnline = catchAsyncErrors(async (req, res, next) => {
   const {
     shippingInfo,
     orderItems,
-    paymentMethod, 
+    paymentMethod,
     itemsPrice,
     taxPrice,
     shippingCharges,
@@ -61,10 +61,10 @@ export const placeOrderOnline = catchAsyncErrors(async (req, res, next) => {
     user,
   };
   const options = {
-    amount: Number(totalAmount * 100) ,
+    amount: Number(totalAmount * 100),
     currency: "INR",
   };
-// console.log(options); 
+  // console.log(options);
   const order = await instance.orders.create(options);
   // console.log(order);
   res.status(201).json({
@@ -144,6 +144,7 @@ export const updateOrder = catchAsyncErrors(async (req, res, next) => {
   await order.save({ validateBeforeSave: false });
   res.status(200).json({
     success: true,
+    message: "Order Update Successfully",
   });
 });
 
@@ -167,5 +168,6 @@ export const deleteOrder = catchAsyncErrors(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
+    message: "Order deleted successfully",
   });
 });
