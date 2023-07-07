@@ -10,7 +10,12 @@ const productSchema = mongoose.Schema({
     type: String,
     required: [true, "Please Enter product Description"],
   },
-
+  highlights: [
+    { 
+      type: String,
+     required: [true, "Please Add Product highlight"] 
+    },
+  ],
   price: {
     type: Number,
     required: [true, "Please Enter product Price"],
@@ -20,7 +25,7 @@ const productSchema = mongoose.Schema({
     type: Number,
     required: [true, "Please enter cutted price"],
   },
-  
+
   ratings: {
     type: Number,
     default: 0,
