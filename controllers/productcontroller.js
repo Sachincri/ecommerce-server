@@ -165,7 +165,7 @@ export const deleteProduct = catchAsyncError(async (req, res, next) => {
 
 // Create New Review or Update the review
 export const createProductReview = catchAsyncError(async (req, res, next) => {
-  const { rating, comment, productId, orderId } = req.body;
+  const { rating, comment, productId } = req.body;
 
   const review = {
     user: req.user._id,
@@ -202,7 +202,7 @@ export const createProductReview = catchAsyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Thanks for your feedback."
+    message: "Thanks for your feedback.",
   });
 });
 
@@ -264,6 +264,6 @@ export const deleteReview = catchAsyncError(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Review Delete Successfully"
+    message: "Review Delete Successfully",
   });
 });

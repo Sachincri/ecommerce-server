@@ -40,6 +40,10 @@ const schema = new mongoose.Schema({
         required: true,
       },
 
+      cuttedPrice: {
+        type: Number,
+        required: true,
+      },
       price: {
         type: Number,
         required: true,
@@ -86,7 +90,7 @@ const schema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  
+
   taxPrice: {
     type: Number,
     default: 0,
@@ -102,24 +106,24 @@ const schema = new mongoose.Schema({
     default: 0,
   },
 
-  totalPrice: {
-    type: Number,
-    default: 0,
-    required: true,
-  },
-
   orderStatus: {
     type: String,
-    enum: ["Processing", "Shipped", "Delivered"],
-    default: "Processing",
+    required: true,
+    default: "Ordered",
   },
-
-  deliveredAt: Date,
 
   createdAt: {
     type: Date,
     default: Date.now,
   },
+
+  processingAt: Date,
+
+  shippedAt: Date,
+
+  deliveredAt: Date,
+
+  OrderCancelAT: Date,
 });
 
 export const Order = mongoose.model("Order", schema);

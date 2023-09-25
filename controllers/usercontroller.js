@@ -7,7 +7,7 @@ import crypto from "crypto";
 import cloudinary from "cloudinary";
 import getDataUri from "../utils/getDataUri.js";
 
-// Register a User
+// SignUp a User
 export const signUp = catchAsyncErrors(async (req, res, next) => {
   const { name, email, password } = req.body;
   const file = req.file;
@@ -81,7 +81,7 @@ export const forgetPassword = catchAsyncErrors(async (req, res, next) => {
 
   await user.save();
 
-  const url = `${process.env.FRONTEND_URL}/password/reset/${resetToken}`;
+  const url = `${process.env.FRONTEND_URL_1}/password/reset/${resetToken}`;
 
   const message = `Click on the link to reset your password. ${url}. If you have not request then please ignore.`;
 

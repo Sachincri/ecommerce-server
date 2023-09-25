@@ -4,7 +4,7 @@ import ErrorHandler from "../utils/errorHandler.js";
 import catchAsyncErrors from "../middlewares/catchAsyncError.js";
 import { instance } from "../server.js";
 
-// Create a  Order
+// Create a  Order COD 
 export const placeOrder = catchAsyncErrors(async (req, res, next) => {
   const {
     shippingInfo,
@@ -64,7 +64,7 @@ export const placeOrderOnline = catchAsyncErrors(async (req, res, next) => {
     amount: Number(totalAmount * 100),
     currency: "INR",
   };
-  // console.log(options);
+
   const order = await instance.orders.create(options);
   // console.log(order);
   res.status(201).json({
@@ -130,24 +130,34 @@ export const updateOrder = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("You have already delivered this order", 400));
   }
 
+  if (req.body.status === "Processing") {
+    order.processingAt = Date.now();
+  }
+
   if (req.body.status === "Shipped") {
+    order.shippedAt = Date.now();
     order.orderItems.forEach(async (o) => {
       await updateStock(o.product, o.quantity);
     });
   }
-  order.orderStatus = req.body.status;
 
   if (req.body.status === "Delivered") {
     order.deliveredAt = Date.now();
   }
+  if (req.body.status === "OrderCancel") {
+    order.OrderCancelAT = Date.now();
+  }
+  order.orderStatus = req.body.status;
 
   await order.save({ validateBeforeSave: false });
+
   res.status(200).json({
     success: true,
     message: "Order Update Successfully",
   });
 });
 
+// dec Stock after shipped order
 async function updateStock(id, quantity) {
   const product = await Product.findById(id);
 

@@ -12,10 +12,10 @@ import {
   deleteUser,
   getSingleUser,
   updateUserRole,
-  updateprofilepicture
+  updateprofilepicture,
 } from "../controllers/usercontroller.js";
 import { isAuthenticatedUser, authorizeRoles } from "../middlewares/auth.js";
-import {singleUpload} from "../middlewares/multer.js";
+import { singleUpload } from "../middlewares/multer.js";
 const router = express.Router();
 
 router.route("/register").post(singleUpload, signUp);
