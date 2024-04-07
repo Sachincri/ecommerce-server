@@ -18,6 +18,12 @@ const productSchema = mongoose.Schema({
     maxLength: [8, "Price cannot exceed 8 characters"],
   },
 
+  offers: [
+    {
+      type: String,
+      required: [true, "Please Add Product Offers"],
+    },
+  ],
   highlights: [
     {
       type: String,
@@ -56,7 +62,17 @@ const productSchema = mongoose.Schema({
     type: String,
     required: [true, "Please Enter Product Category"],
   },
-
+  brand: {
+    name: { type: String },
+    image: {
+      public_id: {
+        type: String,
+      },
+      url: {
+        type: String,
+      },
+    },
+  },
   stock: {
     type: Number,
     required: [true, "Please Enter product Stock"],
@@ -66,6 +82,7 @@ const productSchema = mongoose.Schema({
 
   discount: {
     type: Number,
+    default: 0,
   },
 
   numOfReviews: {

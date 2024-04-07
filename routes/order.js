@@ -8,25 +8,25 @@ import {
   deleteOrder,
   placeOrderOnline,
 } from "../controllers/ordercontroller.js";
-import { isAuthenticatedUser, authorizeRoles } from "../middlewares/auth.js";
+import { isAuthUser, authorizeRoles } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.route("/createorder").post(isAuthenticatedUser, placeOrder);
+router.route("/createorder").post(isAuthUser, placeOrder);
 
-router.route("/createorderonline").post(isAuthenticatedUser, placeOrderOnline);
+router.route("/createorderonline").post(isAuthUser, placeOrderOnline);
 
-router.route("/order/:id").get(isAuthenticatedUser, getSingleOrder);
+router.route("/order/:id").get(isAuthUser, getSingleOrder);
 
-router.route("/orders/me").get(isAuthenticatedUser, myOrders);
+router.route("/orders/me").get(isAuthUser, myOrders);
 
 router
   .route("/admin/orders")
-  .get(isAuthenticatedUser, authorizeRoles("admin"), getAllOrders);
+  .get(isAuthUser, authorizeRoles("admin"), getAllOrders);
 
 router
   .route("/admin/order/:id")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateOrder)
-  .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteOrder);
+  .put(isAuthUser, authorizeRoles("admin"), updateOrder)
+  .delete(isAuthUser, authorizeRoles("admin"), deleteOrder);
 
 export default router;

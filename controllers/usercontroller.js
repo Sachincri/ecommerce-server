@@ -4,32 +4,23 @@ import { User } from "../models/userModel.js";
 import sendToken from "../utils/sendToken.js";
 import sendEmail from "../utils/sendEmail.js";
 import crypto from "crypto";
-import cloudinary from "cloudinary";
-import getDataUri from "../utils/getDataUri.js";
+import { Product } from "../models/productModel.js";
 
 // SignUp a User
 export const signUp = catchAsyncErrors(async (req, res, next) => {
   const { name, email, password } = req.body;
-  const file = req.file;
 
-  if (!name || !email || !password || !file)
+  if (!name || !email || !password)
     return next(new ErrorHandler("Please fill all field", 400));
 
   let user = await User.findOne({ email });
 
   if (user) return next(new ErrorHandler("User Already Exist", 409));
 
-  const fileUri = getDataUri(file);
-  const mycloud = await cloudinary.v2.uploader.upload(fileUri.content);
-
   user = await User.create({
     name,
     email,
     password,
-    avatar: {
-      public_id: mycloud.public_id,
-      url: mycloud.secure_url,
-    },
   });
 
   sendToken(res, user, "Registered Successfully", 201);
@@ -123,6 +114,97 @@ export const resetPassword = catchAsyncErrors(async (req, res, next) => {
     message: "Password Changed Successfully",
   });
 });
+// Add and Remove Wishlist
+export const addToWishList = catchAsyncErrors(async (req, res, next) => {
+  const { productId } = req.body;
+
+  const user = await User.findById(req.user._id);
+
+  if (!user) return next(new ErrorHandler("user not found", 401));
+
+  const product = await Product.findById(productId);
+
+  if (!product) return next(new ErrorHandler("product not found", 401));
+
+  const productExist = user.wishList.find(
+    (prod) => prod.product.toString() === product._id.toString()
+  );
+
+  if (productExist) {
+    await User.findByIdAndUpdate(
+      req.user._id,
+      { $pull: { wishList: { product: product._id } } },
+      { new: true }
+    );
+    res.status(200).json({
+      success: true,
+      message: "Product is removed from Wishlist",
+    });
+  } else {
+    await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $push: {
+          wishList: {
+            product: product._id,
+            name: product.name,
+            price: product.price,
+            image: product.images[0].url,
+            rating: product.ratings,
+            numOfReviews: product.numOfReviews,
+            cuttedPrice: product.cuttedPrice,
+          },
+        },
+      },
+      { new: true }
+    );
+    res.status(200).json({
+      success: true,
+      message: "Product is added to My Wishlist",
+    });
+  }
+});
+
+export const recentlyViewedProduct = catchAsyncErrors(
+  async (req, res, next) => {
+    const { productId } = req.body;
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) return next(new ErrorHandler("User not found", 404));
+
+    const product = await Product.findById(productId);
+
+    if (!product) return next(new ErrorHandler("Product not found", 404));
+
+    const productExist = user.recentlyViewed.find(
+      (prod) => prod.product.toString() === product._id.toString()
+    );
+
+    if (productExist) {
+      return next(new ErrorHandler(404));
+    }
+
+    if (user.recentlyViewed.length >= 10) {
+      user.recentlyViewed.pop();
+    }
+
+    user.recentlyViewed.push({
+      product: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0].url,
+      rating: product.ratings,
+      discount: product.discount,
+      numOfReviews: product.numOfReviews,
+      cuttedPrice: product.cuttedPrice,
+    });
+
+    await user.save();
+
+    res.status(200).json({ success: true });
+  }
+);
 
 // Get User Detail
 export const getUserDetails = catchAsyncErrors(async (req, res, next) => {
@@ -133,6 +215,19 @@ export const getUserDetails = catchAsyncErrors(async (req, res, next) => {
     user,
   });
 });
+
+export const getRecentlyViewedProduct = catchAsyncErrors(
+  async (req, res, next) => {
+    const user = await User.findById(req.user._id);
+
+    const { recentlyViewed } = user;
+
+    res.status(200).json({
+      success: true,
+      recentlyViewed,
+    });
+  }
+);
 
 // update User password
 export const updatePassword = catchAsyncErrors(async (req, res, next) => {
@@ -169,28 +264,6 @@ export const updateProfile = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "Profile Updated Successfully",
-  });
-});
-export const updateprofilepicture = catchAsyncErrors(async (req, res, next) => {
-  const file = req.file;
-
-  const user = await User.findById(req.user._id);
-
-  const fileUri = getDataUri(file);
-  const mycloud = await cloudinary.v2.uploader.upload(fileUri.content);
-
-  await cloudinary.v2.uploader.destroy(user.avatar.public_id);
-
-  user.avatar = {
-    public_id: mycloud.public_id,
-    url: mycloud.secure_url,
-  };
-
-  await user.save();
-
-  res.status(200).json({
-    success: true,
-    message: "Profile Picture Updated Successfully",
   });
 });
 
@@ -245,10 +318,6 @@ export const deleteUser = catchAsyncErrors(async (req, res, next) => {
       new ErrorHandler(`User does not exist with Id: ${req.params.id}`, 400)
     );
   }
-
-  const imageId = user.avatar.public_id;
-
-  await cloudinary.v2.uploader.destroy(imageId);
 
   await user.remove();
 

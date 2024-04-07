@@ -11,11 +11,11 @@ const userSchema = new mongoose.Schema({
     maxLength: [30, "Name cannot exceed 30 characters"],
     minLength: [4, "Name should have more than 4 characters"],
   },
-  
+
   email: {
     type: String,
-    required: [true, "Please Enter Your Email"],
     unique: true,
+    required: [true, "Please Enter Your Email"],
     validate: [validator.isEmail, "Please Enter a valid Email"],
   },
 
@@ -26,14 +26,34 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
 
-  avatar: {
-    public_id: {
-      type: String,
+  wishList: [
+    {
+      product: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Products",
+      },
+      name: String,
+      price: Number,
+      image: String,
+      rating: Number,
+      cuttedPrice: Number,
+      numOfReviews: Number,
     },
-    url: {
-      type: String,
+  ],
+  recentlyViewed: [
+    {
+      product: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Products",
+      },
+      name: String,
+      price: Number,
+      image: String,
+      rating: Number,
+      cuttedPrice: Number,
+      numOfReviews: Number,
     },
-  },
+  ],
 
   role: {
     type: String,
@@ -50,7 +70,6 @@ const userSchema = new mongoose.Schema({
 
   resetPasswordExpire: Date,
 });
-
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {

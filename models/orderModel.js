@@ -59,6 +59,11 @@ const schema = new mongoose.Schema({
         required: true,
       },
 
+      discount: {
+        type: Number,
+        default: 0,
+      },
+
       product: {
         type: mongoose.Schema.ObjectId,
         ref: "Product",
@@ -87,11 +92,6 @@ const schema = new mongoose.Schema({
   paidAt: Date,
 
   itemsPrice: {
-    type: Number,
-    default: 0,
-  },
-
-  taxPrice: {
     type: Number,
     default: 0,
   },

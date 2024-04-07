@@ -10,7 +10,6 @@ config({
 
 export const app = express();
 
-// Using Middlewares
 app.use(express.json());
 app.use(
   express.urlencoded({
@@ -23,7 +22,7 @@ app.use(
   cors({
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    origin: [process.env.FRONTEND_URI_1, process.env.FRONTEND_URI_2],
+    origin: process.env.FRONTEND_URI_1,
   })
 );
 
@@ -42,5 +41,4 @@ app.use("/api/v1", product);
 app.use("/api/v1", order);
 app.use("/api/v1", payment);
 
-// Using Error Middleware
 app.use(errorMiddleware);

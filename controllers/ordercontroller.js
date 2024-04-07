@@ -4,14 +4,13 @@ import ErrorHandler from "../utils/errorHandler.js";
 import catchAsyncErrors from "../middlewares/catchAsyncError.js";
 import { instance } from "../server.js";
 
-// Create a  Order COD 
+// Create a  Order COD
 export const placeOrder = catchAsyncErrors(async (req, res, next) => {
   const {
     shippingInfo,
     orderItems,
     paymentMethod,
     itemsPrice,
-    taxPrice,
     shippingCharges,
     totalAmount,
   } = req.body;
@@ -23,7 +22,6 @@ export const placeOrder = catchAsyncErrors(async (req, res, next) => {
     orderItems,
     paymentMethod,
     itemsPrice,
-    taxPrice,
     shippingCharges,
     totalAmount,
     user,
@@ -43,7 +41,6 @@ export const placeOrderOnline = catchAsyncErrors(async (req, res, next) => {
     orderItems,
     paymentMethod,
     itemsPrice,
-    taxPrice,
     shippingCharges,
     totalAmount,
   } = req.body;
@@ -55,7 +52,6 @@ export const placeOrderOnline = catchAsyncErrors(async (req, res, next) => {
     orderItems,
     paymentMethod,
     itemsPrice,
-    taxPrice,
     shippingCharges,
     totalAmount,
     user,
@@ -66,7 +62,7 @@ export const placeOrderOnline = catchAsyncErrors(async (req, res, next) => {
   };
 
   const order = await instance.orders.create(options);
-  // console.log(order);
+
   res.status(201).json({
     success: true,
     order,
@@ -93,7 +89,21 @@ export const getSingleOrder = catchAsyncErrors(async (req, res, next) => {
 
 // get logged in user  Orders
 export const myOrders = catchAsyncErrors(async (req, res, next) => {
-  const orders = await Order.find({ user: req.user._id });
+  const { search, orderStatus } = req.query;
+
+  let query = {
+    user: req.user._id,
+  };
+
+  if (search) {
+    query["orderItems.name"] = { $regex: search, $options: "i" };
+  }
+
+  if (orderStatus) {
+    query["orderStatus"] = orderStatus;
+  }
+
+  const orders = await Order.find(query);
 
   res.status(200).json({
     success: true,
@@ -108,7 +118,7 @@ export const getAllOrders = catchAsyncErrors(async (req, res, next) => {
   let totalAmount = 0;
 
   orders.forEach((order) => {
-    totalAmount += order.totalPrice;
+    totalAmount += order.price;
   });
 
   res.status(200).json({
@@ -144,9 +154,11 @@ export const updateOrder = catchAsyncErrors(async (req, res, next) => {
   if (req.body.status === "Delivered") {
     order.deliveredAt = Date.now();
   }
+
   if (req.body.status === "OrderCancel") {
     order.OrderCancelAT = Date.now();
   }
+
   order.orderStatus = req.body.status;
 
   await order.save({ validateBeforeSave: false });
@@ -161,7 +173,7 @@ export const updateOrder = catchAsyncErrors(async (req, res, next) => {
 async function updateStock(id, quantity) {
   const product = await Product.findById(id);
 
-  product.Stock -= quantity;
+  product.stock -= quantity;
 
   await product.save({ validateBeforeSave: false });
 }

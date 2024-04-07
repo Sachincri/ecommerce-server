@@ -12,39 +12,47 @@ import {
   deleteUser,
   getSingleUser,
   updateUserRole,
-  updateprofilepicture,
+  addToWishList,
+  recentlyViewedProduct,
+  getRecentlyViewedProduct,
 } from "../controllers/usercontroller.js";
-import { isAuthenticatedUser, authorizeRoles } from "../middlewares/auth.js";
-import { singleUpload } from "../middlewares/multer.js";
+import { isAuthUser, authorizeRoles } from "../middlewares/auth.js";
 const router = express.Router();
 
-router.route("/register").post(singleUpload, signUp);
+router.route("/register").post(signUp);
 
 router.route("/login").post(login);
 
 router.route("/password/forget").post(forgetPassword);
 
+router
+  .route("/recentlyViewed")
+  .post(isAuthUser, recentlyViewedProduct);
+
+router.route("/addToWishList").put(isAuthUser, addToWishList);
+
 router.route("/password/reset/:token").put(resetPassword);
 
 router.route("/logout").get(logout);
 
-router.route("/me").get(isAuthenticatedUser, getUserDetails);
-
-router.route("/password/update").put(isAuthenticatedUser, updatePassword);
-
-router.route("/me/update").put(isAuthenticatedUser, updateProfile);
-// UpdateProfilePicture
 router
-  .route("/updateprofilepicture")
-  .put(isAuthenticatedUser, singleUpload, updateprofilepicture);
+  .route("/getRecentlyViewedProduct")
+  .get(isAuthUser, getRecentlyViewedProduct);
+
+router.route("/me").get(isAuthUser, getUserDetails);
+
+router.route("/password/update").put(isAuthUser, updatePassword);
+
+router.route("/me/update").put(isAuthUser, updateProfile);
+
 router
   .route("/admin/users")
-  .get(isAuthenticatedUser, authorizeRoles("admin"), getAllUser);
+  .get(isAuthUser, authorizeRoles("admin"), getAllUser);
 
 router
   .route("/admin/user/:id")
-  .get(isAuthenticatedUser, authorizeRoles("admin"), getSingleUser)
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateUserRole)
-  .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteUser);
+  .get(isAuthUser, authorizeRoles("admin"), getSingleUser)
+  .put(isAuthUser, authorizeRoles("admin"), updateUserRole)
+  .delete(isAuthUser, authorizeRoles("admin"), deleteUser);
 
 export default router;

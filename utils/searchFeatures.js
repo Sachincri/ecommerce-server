@@ -20,17 +20,23 @@ class SearchFeatures {
 
   filter() {
     const queryCopy = { ...this.queryStr };
-    //   Removing some fields for category
+    // Removing some fields for category
     const removeFields = ["keyword", "page", "limit"];
 
     removeFields.forEach((key) => delete queryCopy[key]);
-
-    // Filter For Price and Rating
-
+    // Filter For Price, Rating, Brand, and Discount
     let queryStr = JSON.stringify(queryCopy);
+
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (key) => `$${key}`);
 
-    this.query = this.query.find(JSON.parse(queryStr));
+    const filterObject = JSON.parse(queryStr);
+
+    if (queryCopy.brand) {
+      const brands = queryCopy.brand.split(",");
+      filterObject["brand"] = { $in: brands };
+    }
+
+    this.query = this.query.find(filterObject);
 
     return this;
   }
