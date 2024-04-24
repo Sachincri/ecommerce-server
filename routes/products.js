@@ -11,6 +11,7 @@ import {
   getAdminProducts,
 } from "../controllers/productcontroller.js";
 import { isAuthUser, authorizeRoles } from "../middlewares/auth.js";
+import { upload } from "../utils/multer.js";
 
 const router = express.Router();
 
@@ -22,13 +23,23 @@ router
 
 router
   .route("/admin/product/new")
-  .post(isAuthUser, authorizeRoles("admin"), createProduct);
+  .post(
+    isAuthUser,
+    authorizeRoles("admin"),
+    upload.array("images", 5),
+    createProduct
+  );
 
 router.route("/product/:id").get(getProductDetails);
 
 router
   .route("/admin/product/:id")
-  .put(isAuthUser, authorizeRoles("admin"), updateProduct)
+  .put(
+    isAuthUser,
+    authorizeRoles("admin"),
+    upload.array("images", 5),
+    updateProduct
+  )
   .delete(isAuthUser, authorizeRoles("admin"), deleteProduct);
 
 router.route("/review").put(isAuthUser, createProductReview);

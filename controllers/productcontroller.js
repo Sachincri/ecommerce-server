@@ -3,21 +3,52 @@ import { Product } from "../models/productModel.js";
 import ErrorHandler from "../utils/errorHandler.js";
 import cloudinary from "cloudinary";
 import SearchFeatures from "../utils/searchFeatures.js";
+import {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} from "../utils/uploadOnCloudinary.js";
 
 // Create Product
 export const createProduct = catchAsyncError(async (req, res, next) => {
-  let images = [];
+  const {
+    name,
+    category,
+    cuttedPrice,
+    price,
+    discount,
+    offers,
+    highlights,
+    stock,
+    warranty,
+    description,
+  } = req.body;
 
-  if (typeof req.body.images === "string") {
-    images.push(req.body.images);
-  } else {
-    images = req.body.images;
+  if (
+    [
+      name,
+      category,
+      cuttedPrice,
+      price,
+      discount,
+      offers,
+      highlights,
+      stock,
+      description,
+    ].some((fields) => fields.trim() !== "")
+  ) {
+    return next(new ErrorHandler("All fields are required", 400));
+  }
+
+  const files = req.files;
+
+  if (!files) {
+    return next(new ErrorHandler("Please add image", 400));
   }
 
   const imagesLinks = [];
 
-  for (let i = 0; i < images.length; i++) {
-    const result = await cloudinary.v2.uploader.upload(images[i], {
+  for (let i = 0; i < files.length; i++) {
+    const result = await uploadOnCloudinary(files[i].path, {
       folder: "products",
     });
 
@@ -27,10 +58,20 @@ export const createProduct = catchAsyncError(async (req, res, next) => {
     });
   }
 
-  req.body.images = imagesLinks;
-  req.body.user = req.user.id;
-
-  await Product.create(req.body);
+  await Product.create({
+    name,
+    category,
+    cuttedPrice,
+    price,
+    discount,
+    offers,
+    highlights,
+    stock,
+    warranty,
+    description,
+    user: req.user._id,
+    images: imagesLinks,
+  });
 
   res.status(201).json({
     success: true,
@@ -94,32 +135,51 @@ export const getProductDetails = catchAsyncError(async (req, res, next) => {
   });
 });
 
+// Update Product --> admin
 export const updateProduct = catchAsyncError(async (req, res, next) => {
+  const {
+    name,
+    category,
+    cuttedPrice,
+    price,
+    discount,
+    offers,
+    highlights,
+    stock,
+    warranty,
+    description,
+  } = req.body;
+
   let product = await Product.findById(req.params.id);
 
   if (!product) {
     return next(new ErrorHandler("Product not found", 404));
   }
 
-  // Images Start Here
-  let images = [];
+  const files = req.files;
 
-  if (typeof req.body.images === "string") {
-    images.push(req.body.images);
-  } else {
-    images = req.body.images;
-  }
+  const imagesLinks = [];
 
-  if (images !== undefined) {
-    // Deleting Images From Cloudinary
+  const update = {
+    name,
+    category,
+    cuttedPrice,
+    price,
+    discount,
+    offers,
+    highlights,
+    stock,
+    warranty,
+    description,
+  };
+
+  if (files && files.length !== 0) {
     for (let i = 0; i < product.images.length; i++) {
-      await cloudinary.v2.uploader.destroy(product.images[i].public_id);
+      await deleteFromCloudinary(product.images[i].public_id);
     }
 
-    const imagesLinks = [];
-
-    for (let i = 0; i < images.length; i++) {
-      const result = await cloudinary.v2.uploader.upload(images[i], {
+    for (let i = 0; i < files.length; i++) {
+      const result = await uploadOnCloudinary(files[i].path, {
         folder: "products",
       });
 
@@ -128,11 +188,10 @@ export const updateProduct = catchAsyncError(async (req, res, next) => {
         url: result.secure_url,
       });
     }
-
-    req.body.images = imagesLinks;
+    update.images = imagesLinks;
   }
 
-  product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+  product = await Product.findByIdAndUpdate(req.params.id, update, {
     new: true,
     runValidators: true,
     useFindAndModify: false,
