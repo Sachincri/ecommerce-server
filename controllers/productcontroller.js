@@ -23,22 +23,6 @@ export const createProduct = catchAsyncError(async (req, res, next) => {
     description,
   } = req.body;
 
-  if (
-    [
-      name,
-      category,
-      cuttedPrice,
-      price,
-      discount,
-      offers,
-      highlights,
-      stock,
-      description,
-    ].some((fields) => fields.trim() !== "")
-  ) {
-    return next(new ErrorHandler("All fields are required", 400));
-  }
-
   const files = req.files;
 
   if (!files) {
